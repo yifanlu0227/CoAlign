@@ -21,7 +21,7 @@ Original Annotations | Complemented Annotations
 ```
 @article{lu2022robust,
   title={Robust Collaborative 3D Object Detection in Presence of Pose Errors},
-  author={Lu, Yifan and Li, Quanhao and Liu, Baoan and Dianat, Mehrdad and Feng, Chen and Chen, Siheng and Wang, Yanfeng},
+  author={Lu, Yifan and Li, Quanhao and Liu, Baoan and Dianati, Mehrdad and Feng, Chen and Chen, Siheng and Wang, Yanfeng},
   journal={arXiv preprint arXiv:2211.07214},
   year={2022}
 }
