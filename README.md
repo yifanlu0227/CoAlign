@@ -77,5 +77,5 @@ Original Annotations | Complemented Annotations
 
 This project is impossible without the code of [OpenCOOD](https://github.com/DerrickXuNu/OpenCOOD), [g2opy](https://github.com/uoip/g2opy) and [d3d](https://github.com/cmpute/d3d)!
 
-Thanks again to @DerrickXuNu
+Thanks again to [@DerrickXuNu](https://github.com/DerrickXuNu)
  for the great code framework.
