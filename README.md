@@ -2,9 +2,11 @@
 
 Robust Collaborative 3D Object Detection in Presence of Pose Errors 
 
+[Paper](https://arxiv.org/abs/2211.07214) | [Video](https://www.youtube.com/watch?v=zCjpFkeC2rA) 
+
 ![Original1](images/coalign.jpg)
 
-[Paper](https://arxiv.org/abs/2211.07214)
+
 
 ## New features (Compared with OpenCOOD):
 
