@@ -465,8 +465,10 @@ def getLateFusionDataset(cls):
                     torch.from_numpy(
                         np.array(cav_content['transformation_matrix'])).float()
                 
-                # late fusion training, no noise
-                transformation_matrix_clean_torch = transformation_matrix_torch
+                # clean transformation matrix
+                transformation_matrix_clean_torch = \
+                    torch.from_numpy(
+                        np.array(cav_content['transformation_matrix_clean'])).float()
 
                 output_dict[cav_id].update({'object_bbx_center': object_bbx_center,
                                             'object_bbx_mask': object_bbx_mask,
