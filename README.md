@@ -2,9 +2,10 @@
 
 Robust Collaborative 3D Object Detection in Presence of Pose Errors 
 
-[Paper](https://arxiv.org/abs/2211.07214) | [Video](https://www.youtube.com/watch?v=zCjpFkeC2rA) 
+[Paper](https://arxiv.org/abs/2211.07214) | [Video](https://www.youtube.com/watch?v=zCjpFkeC2rA) ｜ [Readme Chinese Ver.](https://udtkdfu8mk.feishu.cn/docx/LlMpdu3pNoCS94xxhjMcOWIynie) ｜ [Readme English Ver.](https://udtkdfu8mk.feishu.cn/docx/SZNVd0S7UoD6mVxUM6Wc8If6ncc)
 
 ![Original1](images/coalign.jpg)
+
 
 
 
@@ -40,17 +41,11 @@ Robust Collaborative 3D Object Detection in Presence of Pose Errors
 
 ## Installation
 
-I recommend you visit [CoAlign Installation Guide](https://udtkdfu8mk.feishu.cn/docx/LlMpdu3pNoCS94xxhjMcOWIynie) to learn how to install this repo. I would supplement the English version and the usage of CoAlign into readme soon.
+Please visit the feishu docs CoAlign Installation Guide [Chinese Ver.](https://udtkdfu8mk.feishu.cn/docx/LlMpdu3pNoCS94xxhjMcOWIynie) or [English Ver.](https://udtkdfu8mk.feishu.cn/docx/SZNVd0S7UoD6mVxUM6Wc8If6ncc) to learn how to install and run this repo. 
 
 Or you can refer to [OpenCOOD data introduction](https://opencood.readthedocs.io/en/latest/md_files/data_intro.html)
 and [OpenCOOD installation](https://opencood.readthedocs.io/en/latest/md_files/installation.html) guide to prepare
-data and install CoAlign. The installation is totally the same as OpenCOOD.
-
-The api of camera collaboration and the implementation Lift-Splat will be released in March. OPV2V, V2XSet and DAIR-V2X are supported. Pay attention to the repo if you need.
-
-> Note that I update the AP calculation (sorted by confidence) and add data augmentations (reinitialize) in this codebase, so the result will be higher than that reported in the current paper. I retrain all the models and would update the paper to the final version before March. Then I will remove this paragraph.
-
-
+data and install CoAlign. The installation is totally the same as OpenCOOD, except some dependent packages required by CoAlign.
 
 
 ## Complemented Annotations for DAIR-V2X-C
@@ -83,3 +78,12 @@ This project is impossible without the code of [OpenCOOD](https://github.com/Der
 
 Thanks again to [@DerrickXuNu](https://github.com/DerrickXuNu)
  for the great code framework.
+
+## Q&A
+1. Different AP results between arxiv v2 and arxiv v3? and different from OPV2V[ICRA 22']?
+
+   See [Issue 4](https://github.com/yifanlu0227/CoAlign/issues/4).
+   
+2. How to get V2X-Sim-2.0 pickle file?
+
+   See [Issue 2](https://github.com/yifanlu0227/CoAlign/issues/2).
