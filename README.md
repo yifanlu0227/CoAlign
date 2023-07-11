@@ -7,14 +7,22 @@ Robust Collaborative 3D Object Detection in Presence of Pose Errors
 ![Original1](images/coalign.jpg)
 
 
+## Update🌟 2023.7.11
 
+**Camera-based collaborative perception support!**
+
+We release the multi-agent camera-based detection code, based on [Lift-Splat-Shoot](https://github.com/nv-tlabs/lift-splat-shoot). Support OPV2V, V2XSet and DAIR-V2X-C dataset. 
+
+LiDAR's feature map fusion method can seamlessly adapt to camera BEV feature. Support CoAlign's multiscale fusion, V2XViT, V2VNet, Self-Att, FCooper, DiscoNet(w.o. KD). Please feel free to browse our repo. Example yamls are listed in this folder: `CoAlign/opencood/hypes_yaml/opv2v/camera_no_noise` 
 
 ## New features (Compared with OpenCOOD):
-
+- Modality Support
+  - [x] LiDAR
+  - [x] Camera 🌟
 - Dataset Support
   - [x] OPV2V
-  - [x] V2X-Sim 2.0
-  - [x] DAIR-V2X
+  - [x] V2X-Sim 2.0 🌟
+  - [x] DAIR-V2X 🌟
   - [x] V2XSet
 
 - SOTA collaborative perception method support
@@ -31,11 +39,11 @@ Robust Collaborative 3D Object Detection in Presence of Pose Errors
 
 - Visualization support
   - [x] BEV visualization
-  - [x] 3D visualization
+  - [x] 3D visualization 🌟
 
 - 1-round/2-round communication support
   - transform point cloud first (2-round communication)
-  - warp feature map (1-round communication, by default in this repo.)
+  - warp feature map (1-round communication, by default in this repo. 🌟) 
 
 - Pose error simulation support
 
@@ -48,7 +56,7 @@ and [OpenCOOD installation](https://opencood.readthedocs.io/en/latest/md_files/i
 data and install CoAlign. The installation is totally the same as OpenCOOD, except some dependent packages required by CoAlign.
 
 
-## Complemented Annotations for DAIR-V2X-C
+## Complemented Annotations for DAIR-V2X-C 🌟
 Originally DAIR-V2X only annotates 3D boxes within the range of camera's view in vehicle-side. We supplement the missing 3D box annotations to enable the 360 degree detection. With fully complemented vehicle-side labels, we regenerate the cooperative labels for users, which follow the original cooperative label format.
 
 Original Annotations | Complemented Annotations 
