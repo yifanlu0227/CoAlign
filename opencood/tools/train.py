@@ -124,7 +124,7 @@ def main():
             final_loss.backward()
             optimizer.step()
 
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
 
         if epoch % hypes['train_params']['eval_freq'] == 0:
             valid_ave_loss = []

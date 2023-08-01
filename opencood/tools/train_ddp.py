@@ -172,7 +172,7 @@ def main():
                 scaler.update()
 
 
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
 
         if epoch % hypes['train_params']['eval_freq'] == 0:
             valid_ave_loss = []

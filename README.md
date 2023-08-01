@@ -72,11 +72,13 @@ Original Annotations | Complemented Annotations
 
 ## Citation
 ```
-@article{lu2022robust,
-  title={Robust Collaborative 3D Object Detection in Presence of Pose Errors},
+@inproceedings{lu2023robust,
+  title={Robust collaborative 3d object detection in presence of pose errors},
   author={Lu, Yifan and Li, Quanhao and Liu, Baoan and Dianati, Mehrdad and Feng, Chen and Chen, Siheng and Wang, Yanfeng},
-  journal={arXiv preprint arXiv:2211.07214},
-  year={2022}
+  booktitle={2023 IEEE International Conference on Robotics and Automation (ICRA)},
+  pages={4812--4818},
+  year={2023},
+  organization={IEEE}
 }
 ```
 
