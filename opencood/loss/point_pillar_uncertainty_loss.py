@@ -1,17 +1,12 @@
-"""
-Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from opencood.loss.point_pillar_loss import PointPillarLoss, \
-    softmax_cross_entropy_with_logits, weighted_smooth_l1_loss, sigmoid_focal_loss
+    one_hot_f, softmax_cross_entropy_with_logits, weighted_smooth_l1_loss, sigmoid_focal_loss
 import d3d.mathh as mathh
 from opencood.utils.common_utils import limit_period
 from opencood.data_utils.post_processor.voxel_postprocessor import VoxelPostprocessor
-from opencood.pcdet_utils.iou3d_nms.iou3d_nms_utils import aligned_boxes_iou3d_gpu
 from functools import partial
 
 class PointPillarUncertaintyLoss(PointPillarLoss):
@@ -106,7 +101,7 @@ class PointPillarUncertaintyLoss(PointPillarLoss):
             boxes3d_tgt = VoxelPostprocessor.delta_to_boxes3d(target_dict['targets'],
                                                             output_dict['anchor_box'])[pos_pred_mask]
             iou_weights = reg_weights[pos_pred_mask].view(-1)
-            iou_pos_targets = aligned_boxes_iou3d_gpu(boxes3d_pred.float()[:, [0, 1, 2, 5, 4, 3, 6]], # hwl -> dx dy dz
+            iou_pos_targets = self.iou_loss_func(boxes3d_pred.float()[:, [0, 1, 2, 5, 4, 3, 6]], # hwl -> dx dy dz
                                                     boxes3d_tgt.float()[:, [0, 1, 2, 5, 4, 3, 6]]).detach().squeeze()
             iou_pos_targets = 2 * iou_pos_targets.view(-1) - 1
             iou_loss = weighted_smooth_l1_loss(iou_pos_preds, iou_pos_targets, weights=iou_weights, sigma=self.iou['sigma'])
