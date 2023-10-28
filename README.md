@@ -70,6 +70,19 @@ Original Annotations | Complemented Annotations
 
 **Website:** [Website](https://siheng-chen.github.io/dataset/dair-v2x-c-complemented/)
 
+## Checkpoints
+
+### Single detection with uncertainty
+Download [coalign_precalc](https://drive.google.com/drive/folders/1otDzESlepuhRBE4ZgJQfpArnpG1TG8uu) and save it to `opencood/logs`
+
+### CoAlign Checkpoints
+- [CoAlign OPV2V](https://drive.google.com/drive/folders/14VdGUZ26j4NF0UG_XuNsU7E0uGh_DmOU?usp=sharing)
+- [CoAlign V2X-Sim 2.0](https://drive.google.com/drive/folders/1ymKGFdto8HECKZFJJbCSkiuWlY6HF7OZ?usp=sharing)
+- [CoAlign DAIR-V2X](https://drive.google.com/drive/folders/1zsgEMTGpB_Llz66SqeegXXKdaduIegXE?usp=sharing)
+
+Download them and save them to `opencood/logs`
+
+
 ## Citation
 ```
 @inproceedings{lu2023robust,
