@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# Author: Runsheng Xu <rxx3386@ucla.edu>
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
 # License: TDG-Attribution-NonCommercial-NoDistrib
-
 
 import torch
 import torch.nn as nn
@@ -74,7 +73,7 @@ class PointPillarDiscoNet(nn.Module):
         batch_dict = self.scatter(batch_dict)
 
         _, _, H0, W0 = batch_dict['spatial_features'].shape
-        t_matrix = normalize_pairwise_tfm(data_dict['pairwise_t_matrix'], H0, W0, self.voxel_size[0])
+        normalized_affine_matrix = normalize_pairwise_tfm(data_dict['pairwise_t_matrix'], H0, W0, self.voxel_size[0])
 
         batch_dict = self.backbone(batch_dict)
 
@@ -83,7 +82,7 @@ class PointPillarDiscoNet(nn.Module):
         if self.shrink_flag:
             spatial_features_2d = self.shrink_conv(spatial_features_2d)
 
-        spatial_features_2d = self.fusion_net(spatial_features_2d, record_len, t_matrix)
+        spatial_features_2d = self.fusion_net(spatial_features_2d, record_len, normalized_affine_matrix)
 
         psm = self.cls_head(spatial_features_2d)
         rm = self.reg_head(spatial_features_2d)

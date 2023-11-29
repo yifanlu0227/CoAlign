@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 # Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
-# a class that integrate multiple simple fusion methods (Single Scale)
+# License: TDG-Attribution-NonCommercial-NoDistrib
 # Support F-Cooper, Self-Att, DiscoNet(wo KD), V2VNet, V2XViT, When2comm
 
 import torch.nn as nn
@@ -105,7 +106,7 @@ class PointPillarBaselineMultiscale(nn.Module):
         batch_dict = self.scatter(batch_dict)
         # calculate pairwise affine transformation matrix
         _, _, H0, W0 = batch_dict['spatial_features'].shape # original feature map shape H0, W0
-        t_matrix = normalize_pairwise_tfm(data_dict['pairwise_t_matrix'], H0, W0, self.voxel_size[0])
+        normalized_affine_matrix = normalize_pairwise_tfm(data_dict['pairwise_t_matrix'], H0, W0, self.voxel_size[0])
 
         spatial_features = batch_dict['spatial_features']
 
@@ -116,7 +117,7 @@ class PointPillarBaselineMultiscale(nn.Module):
         feature_list = self.backbone.get_multiscale_feature(spatial_features)
         fused_feature_list = []
         for i, fuse_module in enumerate(self.fusion_net):
-            fused_feature_list.append(fuse_module(feature_list[i], record_len, t_matrix))
+            fused_feature_list.append(fuse_module(feature_list[i], record_len, normalized_affine_matrix))
         fused_feature = self.backbone.decode_multiscale_feature(fused_feature_list) 
 
         if self.shrink_flag:

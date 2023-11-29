@@ -1,6 +1,10 @@
-"""
-This is pose graph optimizer, using g2o (bind to C++)
-"""
+# -*- coding: utf-8 -*-
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+# This is pose graph optimizer, using g2o (bind to C++)
+
+
 import g2o
 import numpy as np
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Author: Hao Xiang <haxiang@g.ucla.edu>
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>, Hao Xiang <haxiang@g.ucla.edu>
 # License: TDG-Attribution-NonCommercial-NoDistrib
 
 

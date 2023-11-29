@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+
 import open3d as o3d
 import numpy as np
 import cv2

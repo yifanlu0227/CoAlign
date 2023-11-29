@@ -1,8 +1,10 @@
-"""
-A model zoo for intermediate fusion.
-Please make sure your pairwise_t_matrix is normalized before using it.
-Enjoy it.
-"""
+# -*- coding: utf-8 -*-
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
+# A model zoo for intermediate fusion.
+# Please make sure your pairwise_t_matrix is normalized before using it.
+
 
 import torch
 from torch import nn
@@ -47,6 +49,26 @@ class MaxFusion(nn.Module):
         super(MaxFusion, self).__init__()
 
     def forward(self, x, record_len, pairwise_t_matrix):
+        """
+        Fusion forwarding.
+        
+        Parameters
+        ----------
+        x : torch.Tensor
+            input data, shape: (sum(n_cav), C, H, W)
+            
+        record_len : list
+            shape: (B)
+            
+        normalized_affine_matrix : torch.Tensor
+            The normalized affine transformation matrix from each cav to ego, 
+            shape: (B, L, L, 2, 3) 
+            
+        Returns
+        -------
+        Fused feature : torch.Tensor
+            shape: (B, C, H, W)
+        """
         _, C, H, W = x.shape
         B, L = pairwise_t_matrix.shape[:2]
         split_x = regroup(x, record_len)
@@ -71,16 +93,36 @@ class AttFusion(nn.Module):
         super(AttFusion, self).__init__()
         self.att = ScaledDotProductAttention(feature_dims)
 
-    def forward(self, xx, record_len, pairwise_t_matrix):
+    def forward(self, xx, record_len, normalized_affine_matrix):
+        """
+        Fusion forwarding.
+        
+        Parameters
+        ----------
+        xx : torch.Tensor
+            input data, shape: (sum(n_cav), C, H, W)
+            
+        record_len : list
+            shape: (B)
+            
+        normalized_affine_matrix : torch.Tensor
+            The normalized affine transformation matrix from each cav to ego, 
+            shape: (B, L, L, 2, 3) 
+            
+        Returns
+        -------
+        Fused feature : torch.Tensor
+            shape: (B, C, H, W)
+        """
         _, C, H, W = xx.shape
-        B, L = pairwise_t_matrix.shape[:2]
+        B, L = normalized_affine_matrix.shape[:2]
         split_x = regroup(xx, record_len)
         batch_node_features = split_x
         out = []
         # iterate each batch
         for b in range(B):
             N = record_len[b]
-            t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
+            t_matrix = normalized_affine_matrix[b][:N, :N, :, :]
             # update each node i
             i = 0 # ego
             x = warp_affine_simple(batch_node_features[b], t_matrix[i, :, :, :], (H, W))
@@ -99,15 +141,15 @@ class DiscoFusion(nn.Module):
         from opencood.models.fuse_modules.disco_fuse import PixelWeightLayer
         self.pixel_weight_layer = PixelWeightLayer(feature_dims)
 
-    def forward(self, xx, record_len, pairwise_t_matrix):
+    def forward(self, xx, record_len, normalized_affine_matrix):
         _, C, H, W = xx.shape
-        B, L = pairwise_t_matrix.shape[:2]
+        B, L = normalized_affine_matrix.shape[:2]
         split_x = regroup(xx, record_len)
         out = []
 
         for b in range(B):
             N = record_len[b]
-            t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
+            t_matrix = normalized_affine_matrix[b][:N, :N, :, :]
             i = 0 # ego
             neighbor_feature = warp_affine_simple(split_x[b],
                                             t_matrix[i, :, :, :],
@@ -152,9 +194,29 @@ class V2VNetFusion(nn.Module):
                                 return_all_layers=False)
         self.mlp = nn.Linear(in_channels, in_channels)
 
-    def forward(self, x, record_len, pairwise_t_matrix):
+    def forward(self, x, record_len, normalized_affine_matrix):
+        """
+        Fusion forwarding.
+        
+        Parameters
+        ----------
+        x : torch.Tensor
+            input data, shape: (sum(n_cav), C, H, W)
+            
+        record_len : list
+            shape: (B)
+            
+        normalized_affine_matrix : torch.Tensor
+            The normalized affine transformation matrix from each cav to ego, 
+            shape: (B, L, L, 2, 3) 
+            
+        Returns
+        -------
+        Fused feature : torch.Tensor
+            shape: (B, C, H, W)
+        """
         _, C, H, W = x.shape
-        B, L = pairwise_t_matrix.shape[:2]
+        B, L = normalized_affine_matrix.shape[:2]
 
         split_x = regroup(x, record_len)
         # (B*L,L,1,H,W)
@@ -163,7 +225,7 @@ class V2VNetFusion(nn.Module):
             N = record_len[b]
             for i in range(N):
                 one_tensor = torch.ones((L,1,H,W)).to(x)
-                roi_mask[b,i] = warp_affine_simple(one_tensor, pairwise_t_matrix[b][i, :, :, :],(H, W))
+                roi_mask[b,i] = warp_affine_simple(one_tensor, normalized_affine_matrix[b][i, :, :, :],(H, W))
 
         batch_node_features = split_x
         # iteratively update the features for num_iteration times
@@ -177,7 +239,7 @@ class V2VNetFusion(nn.Module):
                 N = record_len[b]
                 # (N,N,4,4)
                 # t_matrix[i, j]-> from i to j
-                t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
+                t_matrix = normalized_affine_matrix[b][:N, :N, :, :]
 
                 updated_node_features = []
 
@@ -236,9 +298,29 @@ class V2XViTFusion(nn.Module):
         from opencood.models.sub_modules.v2xvit_basic import V2XTransformer
         self.fusion_net = V2XTransformer(args['transformer'])
 
-    def forward(self, x, record_len, pairwise_t_matrix):
+    def forward(self, x, record_len, normalized_affine_matrix):
+        """
+        Fusion forwarding.
+        
+        Parameters
+        ----------
+        x : torch.Tensor
+            input data, shape: (sum(n_cav), C, H, W)
+            
+        record_len : list
+            shape: (B)
+            
+        normalized_affine_matrix : torch.Tensor
+            The normalized affine transformation matrix from each cav to ego, 
+            shape: (B, L, L, 2, 3) 
+            
+        Returns
+        -------
+        Fused feature : torch.Tensor
+            shape: (B, C, H, W)
+        """
         _, C, H, W = x.shape
-        B, L = pairwise_t_matrix.shape[:2]
+        B, L = normalized_affine_matrix.shape[:2]
 
         regroup_feature, mask = Regroup(x, record_len, L)
         prior_encoding = \
@@ -255,7 +337,7 @@ class V2XViTFusion(nn.Module):
 
         for b in range(B):
             ego = 0
-            regroup_feature_new.append(warp_affine_simple(regroup_feature[b], pairwise_t_matrix[b, ego], (H, W)))
+            regroup_feature_new.append(warp_affine_simple(regroup_feature[b], normalized_affine_matrix[b, ego], (H, W)))
         regroup_feature = torch.stack(regroup_feature_new)
 
         # b l c h w -> b l h w c
@@ -288,32 +370,29 @@ class When2commFusion(nn.Module):
         # self.attention_net = MIMOGeneralDotProductAttention(self.query_size, self.key_size)
         self.attention_net = AdditiveAttentin(self.key_size, self.query_size)
 
-    def forward(self, x, record_len, pairwise_t_matrix):
+    def forward(self, x, record_len, normalized_affine_matrix):
         """
         Fusion forwarding.
         
         Parameters
         ----------
         x : torch.Tensor
-            input data, (sum(n_cav), C, H, W)
+            input data, shape: (sum(n_cav), C, H, W)
             
         record_len : list
             shape: (B)
             
-        pairwise_t_matrix : torch.Tensor
-            The transformation matrix from each cav to ego, 
-            shape: (B, L, L, 4, 4) 
-        
-        weight: torch.Tensor
-            Weight of aggregating coming message
-            shape: (B, L, L)
+        normalized_affine_matrix : torch.Tensor
+            The normalized affine transformation matrix from each cav to ego, 
+            shape: (B, L, L, 2, 3) 
             
         Returns
         -------
-        Fused feature.
+        Fused feature : torch.Tensor
+            shape: (B, C, H, W)
         """
         _, C, H, W = x.shape
-        B, L = pairwise_t_matrix.shape[:2]
+        B, L = normalized_affine_matrix.shape[:2]
 
         # split x:[(L1, C, H, W), (L2, C, H, W), ...]
         # for example [[2, 256, 50, 176], [1, 256, 50, 176], ...]
@@ -326,7 +405,7 @@ class When2commFusion(nn.Module):
             N = record_len[b]
             # (N,N,4,4)
             # t_matrix[i, j]-> from i to j
-            t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
+            t_matrix = normalized_affine_matrix[b][:N, :N, :, :]
 
             # update each node i
             # (N,1,H,W)
@@ -351,155 +430,3 @@ class When2commFusion(nn.Module):
         
         return out
 
-
-
-class Where2commFusion(nn.Module):
-    def __init__(self, args):
-        super(Where2commFusion, self).__init__()
-
-        self.communication = False
-        self.round = 1
-        if 'communication' in args:
-            self.communication = True
-            self.naive_communication = Communication(args['communication'])
-            if 'round' in args['communication']:
-                self.round = args['communication']['round']
- 
-        self.agg_mode = args['agg_operator']['mode']
-        self.multi_scale = args['multi_scale']
-        if self.multi_scale:
-            layer_nums = args['layer_nums']
-            num_filters = args['num_filters']
-            self.num_levels = len(layer_nums)
-            self.fuse_modules = nn.ModuleList()
-            for idx in range(self.num_levels):
-                if self.agg_mode == 'ATTEN':
-                    fuse_network = AttFusion(num_filters[idx])
-                elif self.agg_mode == 'MAX':
-                    fuse_network = MaxFusion()
-                elif self.agg_mode == 'Transformer':
-                    fuse_network = TransformerFusion(
-                                                channels=num_filters[idx], 
-                                                n_head=args['agg_operator']['n_head'], 
-                                                with_spe=args['agg_operator']['with_spe'], 
-                                                with_scm=args['agg_operator']['with_scm'])
-                self.fuse_modules.append(fuse_network)
-        else:
-            if self.agg_mode == 'ATTEN':
-                self.fuse_modules = AttFusion(args['agg_operator']['feature_dim'])
-            elif self.agg_mode == 'MAX':
-                self.fuse_modules = MaxFusion()   
-            elif self.agg_mode == 'Transformer':
-                self.fuse_network = TransformerFusion(
-                                            channels=args['agg_operator']['feature_dim'], 
-                                            n_head=args['agg_operator']['n_head'], 
-                                            with_spe=args['agg_operator']['with_spe'], 
-                                            with_scm=args['agg_operator']['with_scm'])     
-
-    def forward(self, x, rm, record_len, pairwise_t_matrix, backbone=None, heads=None):
-        """
-        Fusion forwarding.
-        
-        Parameters
-        ----------
-        x : torch.Tensor
-            input data, (sum(n_cav), C, H, W)
-            
-        record_len : list
-            shape: (B)
-            
-        pairwise_t_matrix : torch.Tensor
-            The transformation matrix from each cav to ego, 
-            shape: (B, L, L, 4, 4) 
-            
-        Returns
-        -------
-        Fused feature.
-        """
-        _, C, H, W = x.shape
-        B, L = pairwise_t_matrix.shape[:2]
-
-        if self.multi_scale:
-            ups = []
-            # backbone.__dict__()
-            with_resnet = True if hasattr(backbone, 'resnet') else False
-            if with_resnet:
-                feats = backbone.resnet(x)
-            
-            for i in range(self.num_levels):
-                x = feats[i] if with_resnet else backbone.blocks[i](x)
-
-                ############ 1. Communication (Mask the features) #########
-                if i==0:
-                    if self.communication:
-                        batch_confidence_maps = regroup(rm, record_len)
-                        _, communication_masks, communication_rates = self.naive_communication(batch_confidence_maps, record_len, pairwise_t_matrix)
-                        x = x * communication_masks
-                    else:
-                        communication_rates = torch.tensor(0).to(x.device)
-                
-                ############ 2. Split the confidence map #######################
-                # split x:[(L1, C, H, W), (L2, C, H, W), ...]
-                # for example [[2, 256, 50, 176], [1, 256, 50, 176], ...]
-                batch_node_features = regroup(x, record_len)
-                
-                ############ 3. Fusion ####################################
-                x_fuse = []
-                for b in range(B):
-                    # number of valid agent
-                    N = record_len[b]
-                    # (N,N,4,4)
-                    # t_matrix[i, j]-> from i to j
-                    t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
-                    node_features = batch_node_features[b]
-                    C, H, W = node_features.shape[1:]
-                    neighbor_feature = warp_affine_simple(node_features,
-                                                    t_matrix[0, :, :, :],
-                                                    (H, W))
-                    x_fuse.append(self.fuse_modules[i](neighbor_feature))
-                x_fuse = torch.stack(x_fuse)
-
-                ############ 4. Deconv ####################################
-                if len(backbone.deblocks) > 0:
-                    ups.append(backbone.deblocks[i](x_fuse))
-                else:
-                    ups.append(x_fuse)
-                
-            if len(ups) > 1:
-                x_fuse = torch.cat(ups, dim=1)
-            elif len(ups) == 1:
-                x_fuse = ups[0]
-            
-            if len(backbone.deblocks) > self.num_levels:
-                x_fuse = backbone.deblocks[-1](x_fuse)
-        else:
-            ############ 1. Split the features #######################
-            # split x:[(L1, C, H, W), (L2, C, H, W), ...]
-            # for example [[2, 256, 50, 176], [1, 256, 50, 176], ...]
-            batch_node_features = self.regroup(x, record_len)
-            batch_confidence_maps = self.regroup(rm, record_len)
-
-            ############ 2. Communication (Mask the features) #########
-            if self.communication:
-                _, communication_masks, communication_rates = self.naive_communication(batch_confidence_maps, record_len, pairwise_t_matrix)
-            else:
-                communication_rates = torch.tensor(0).to(x.device)
-            
-            ############ 3. Fusion ####################################
-            x_fuse = []
-            for b in range(B):
-                # number of valid agent
-                N = record_len[b]
-                # (N,N,4,4)
-                # t_matrix[i, j]-> from i to j
-                t_matrix = pairwise_t_matrix[b][:N, :N, :, :]
-                node_features = batch_node_features[b]
-                if self.communication:
-                    node_features = node_features * communication_masks[b]
-                neighbor_feature = warp_affine_simple(node_features,
-                                                t_matrix[0, :, :, :],
-                                                (H, W))
-                x_fuse.append(self.fuse_modules(neighbor_feature))
-            x_fuse = torch.stack(x_fuse)
-        
-        return x_fuse, communication_rates, {}

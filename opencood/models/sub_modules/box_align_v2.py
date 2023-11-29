@@ -1,8 +1,6 @@
-"""
-This module is designed for box alignment
-
-We will use g2o for pose graph optimization.
-"""
+# -*- coding: utf-8 -*-
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
+# License: TDG-Attribution-NonCommercial-NoDistrib
 
 
 from opencood.models.sub_modules.pose_graph_optim import PoseGraphOptimization2D

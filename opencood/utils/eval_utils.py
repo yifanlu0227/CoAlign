@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
-# Author: Runsheng Xu <rxx3386@ucla.edu>
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
 # License: TDG-Attribution-NonCommercial-NoDistrib
+
+# This eval utils use correct AP calculation with global sorting of all predictions
+# Different from original OPV2V paper. 
+# See https://github.com/DerrickXuNu/OpenCOOD/issues/104
 
 
 import os

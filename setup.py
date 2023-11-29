@@ -20,7 +20,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     license='MIT',
-    author='Runsheng Xu, Hao Xiang, Yifan Lu',
+    author='Yifan Lu, Runsheng Xu, Hao Xiang',
     author_email='yifan_lu@sjtu.edu.cn',
     description='An opensource pytorch framework for autonomous driving '
                 'cooperative detection',

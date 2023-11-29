@@ -1,6 +1,7 @@
-"""
-Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
-"""
+# -*- coding: utf-8 -*-
+# Author: Yifan Lu <yifan_lu@sjtu.edu.cn>
+# License: TDG-Attribution-NonCommercial-NoDistrib
+
 from numpy import record
 import torch
 import torch.nn as nn
