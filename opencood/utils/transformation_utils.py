@@ -86,7 +86,9 @@ def normalize_pairwise_tfm(pairwise_t_matrix, H, W, discrete_ratio, downsample_r
     pairwise_t_matrix[...,0,2] = pairwise_t_matrix[...,0,2] / (downsample_rate * discrete_ratio * W) * 2
     pairwise_t_matrix[...,1,2] = pairwise_t_matrix[...,1,2] / (downsample_rate * discrete_ratio * H) * 2
 
-    return pairwise_t_matrix
+    normalized_affine_matrix = pairwise_t_matrix
+
+    return normalized_affine_matrix
 
 def pose_to_tfm(pose):
     """ Transform batch of pose to tfm
