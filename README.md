@@ -6,6 +6,8 @@ Robust Collaborative 3D Object Detection in Presence of Pose Errors
 
 ![Original1](images/coalign.jpg)
 
+## Update🌟 2024.1.24
+**HEAL** is accepted to ICLR 2024. We implement a unified and integrated multi-agent collaborative perception framework for LiDAR-based, camera-based and heterogeneous setting! See [HEAL GitHub](https://github.com/yifanlu0227/HEAL).
 
 ## Update🌟 2023.7.11
 
