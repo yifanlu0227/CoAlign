@@ -1,6 +1,11 @@
-numpy
-cython
-tensorboardX
-shapely
+icecream
+opencv-python-headless
+open3d
+matplotlib
+tensorboardx
+pyyaml
+h5py
 einops
-imageio
+pyquaternion
+python-lzf
+efficientnet_pytorch==0.7.0
