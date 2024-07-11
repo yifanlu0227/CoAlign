@@ -1,23 +1,27 @@
 from functools import partial
-
+from termcolor import colored
 import spconv
 import torch.nn as nn
 
+try: # spconv1
+    from spconv import SparseSequential, SubMConv3d, SparseConv3d, SparseInverseConv3d, SparseConvTensor
+except: # spconv2
+    from spconv.pytorch import  SparseSequential, SubMConv3d, SparseConv3d, SparseInverseConv3d, SparseConvTensor
 
 def post_act_block(in_channels, out_channels, kernel_size, indice_key=None, stride=1, padding=0,
                    conv_type='subm', norm_fn=None):
 
     if conv_type == 'subm':
-        conv = spconv.SubMConv3d(in_channels, out_channels, kernel_size, bias=False, indice_key=indice_key)
+        conv = SubMConv3d(in_channels, out_channels, kernel_size, bias=False, indice_key=indice_key)
     elif conv_type == 'spconv':
-        conv = spconv.SparseConv3d(in_channels, out_channels, kernel_size, stride=stride, padding=padding,
+        conv = SparseConv3d(in_channels, out_channels, kernel_size, stride=stride, padding=padding,
                                    bias=False, indice_key=indice_key)
     elif conv_type == 'inverseconv':
-        conv = spconv.SparseInverseConv3d(in_channels, out_channels, kernel_size, indice_key=indice_key, bias=False)
+        conv = SparseInverseConv3d(in_channels, out_channels, kernel_size, indice_key=indice_key, bias=False)
     else:
         raise NotImplementedError
 
-    m = spconv.SparseSequential(
+    m = SparseSequential(
         conv,
         norm_fn(out_channels),
         nn.ReLU(),
@@ -34,32 +38,39 @@ class VoxelBackBone8x(nn.Module):
 
         self.sparse_shape = grid_size[::-1] + [1, 0, 0]
 
-        self.conv_input = spconv.SparseSequential(
-            spconv.SubMConv3d(input_channels, 16, 3, padding=1, bias=False, indice_key='subm1'),
+        if input_channels == 64:
+            print(f"{colored('[Warning]', 'red', attrs=['bold'])}", 
+                  f"{colored('In this checkpoint and configuration yaml (typically provided by the author), SECOND model has wrong `encoder_args`-`spconv`-`num_features_in`.', 'red')}\n",
+                  f"{colored('It is supposed to be 4, but is provided with 64.', 'red')}\n",
+                  f"{colored('Though you can still run the model due to no sanity check in spconv 1.2.1 and get reasonable performance,', 'red')}",
+                  f"{colored('it is not a correct convolution. See discussion in HEAL issue 20. ', 'red')}")
+
+        self.conv_input = SparseSequential(
+            SubMConv3d(input_channels, 16, 3, padding=1, bias=False, indice_key='subm1'),
             norm_fn(16),
             nn.ReLU(),
         )
         block = post_act_block
 
-        self.conv1 = spconv.SparseSequential(
+        self.conv1 = SparseSequential(
             block(16, 16, 3, norm_fn=norm_fn, padding=1, indice_key='subm1'),
         )
 
-        self.conv2 = spconv.SparseSequential(
+        self.conv2 = SparseSequential(
             # [1600, 1408, 41] <- [800, 704, 21]
             block(16, 32, 3, norm_fn=norm_fn, stride=2, padding=1, indice_key='spconv2', conv_type='spconv'),
             block(32, 32, 3, norm_fn=norm_fn, padding=1, indice_key='subm2'),
             block(32, 32, 3, norm_fn=norm_fn, padding=1, indice_key='subm2'),
         )
 
-        self.conv3 = spconv.SparseSequential(
+        self.conv3 = SparseSequential(
             # [800, 704, 21] <- [400, 352, 11]
             block(32, 64, 3, norm_fn=norm_fn, stride=2, padding=1, indice_key='spconv3', conv_type='spconv'),
             block(64, 64, 3, norm_fn=norm_fn, padding=1, indice_key='subm3'),
             block(64, 64, 3, norm_fn=norm_fn, padding=1, indice_key='subm3'),
         )
 
-        self.conv4 = spconv.SparseSequential(
+        self.conv4 = SparseSequential(
             # [400, 352, 11] <- [200, 176, 5]
             block(64, 64, 3, norm_fn=norm_fn, stride=2, padding=(0, 1, 1), indice_key='spconv4', conv_type='spconv'),
             block(64, 64, 3, norm_fn=norm_fn, padding=1, indice_key='subm4'),
@@ -71,9 +82,9 @@ class VoxelBackBone8x(nn.Module):
             self.num_point_features = self.model_cfg['num_features_out']
         else:
             self.num_point_features = 128
-        self.conv_out = spconv.SparseSequential(
+        self.conv_out = SparseSequential(
             # [200, 150, 5] -> [200, 150, 2]
-            spconv.SparseConv3d(64, self.num_point_features, (3, 1, 1), stride=(2, 1, 1), padding=last_pad,
+            SparseConv3d(64, self.num_point_features, (3, 1, 1), stride=(2, 1, 1), padding=last_pad,
                                 bias=False, indice_key='spconv_down2'),
             norm_fn(self.num_point_features),
             nn.ReLU(),
@@ -100,21 +111,13 @@ class VoxelBackBone8x(nn.Module):
         voxel_features, voxel_coords = batch_dict['voxel_features'], \
                                        batch_dict['voxel_coords']
         batch_size = batch_dict['batch_size']
-        input_sp_tensor = spconv.SparseConvTensor(
+        input_sp_tensor = SparseConvTensor(
             features=voxel_features,
             indices=voxel_coords.int(),
             spatial_shape=self.sparse_shape,
             batch_size=batch_size
         )
-        # 始终以SparseConvTensor的形式输出
-        # 主要包括:
-        # batch_size: batch size大小
-        # features: (特征数量，特征维度)
-        # indices: (特征数量，特征索引(4维，第一维度是batch索引))
-        # spatial_shape:(z,y,x)
-        # indice_dict{(tuple:5),}:0:输出索引，1:输入索引，2:输入Rulebook索引，3:输出Rulebook索引，4:spatial shape
-        # sparity:稀疏率
-        # 在heigh_compression.py中结合batch，spatial_shape、indice和feature将特征还原的对应位置，并在高度方向合并压缩至BEV特征图
+
         x = self.conv_input(input_sp_tensor)
 
         x_conv1 = self.conv1(x)
